@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../components/loginMain.vue'
 import DashboardNexus from '@/views/dashboardNexus'
+
 const routes = [
   {
     path: '/',
@@ -8,7 +9,7 @@ const routes = [
     component: Login
   },
   {
-    path: '/dashboard',
+    path: '/dashboard/:user_id?',
     name: 'dashboard',
     component: DashboardNexus,
     props: true

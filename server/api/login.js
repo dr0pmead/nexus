@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
 
 // Обработка запроса на аутентификацию
 router.post('/', (req, res) => {
-  const { username, password} = req.body;
+  const { username, password } = req.body;
 
   // Выполните логику аутентификации
   // Пример: Проверка пользователя в базе данных
@@ -26,22 +26,23 @@ router.post('/', (req, res) => {
     }
 
     if (results.length > 0) {
-      // Пользователь найден, проверяем пароль
+      // Пользователь найден
       const user = results[0];
-      if (password === user.password) {
+      const storedPassword = user.password;
+
+      // Сравниваем пароли
+      if (password === storedPassword) {
         // Логин и пароль верные
-        res.json({ success: true, name: user.name });
+        res.json({ success: true, user_id: user.user_id });
       } else {
         // Пароль неверный
-        res.json({ success: false });
+        res.json({ success: false, passwordMatch: false });
       }
     } else {
       // Пользователь не найден
-      res.json({ success: false });
+      res.json({ success: false, passwordMatch: true });
     }
   });
-
-  
 });
 
 module.exports = router;

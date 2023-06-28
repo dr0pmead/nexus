@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const loginRouter = require('./api/login');
-const usersRouter = require('./api/user');
+const userRouter = require('./api/user')
 
 app.use(express.json());
 
@@ -12,8 +12,9 @@ app.use((req, res, next) => {
     next();
   });
 // Маршрут для аутентификации
-app.use('/api/login', loginRouter, console.log);
-app.use('/api/user', usersRouter, console.log);
+app.use('/api/login', loginRouter);
+
+app.use('/api/user', userRouter);
 
 
 // Запуск сервера
