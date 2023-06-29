@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-[#0F0E0F] min-h-screen font-[Montserrat]">
+    <div class="bg-[#0F0E0F] min-h-screen font-[Montserrat]">
+      <ModalAddPosition ref="modalAddPosition" :isModalOpen="isModalOpen" @closeModal="resetTags"/>
     <div class="flex flex-col px-28 py-14">
       <header class="flex justify-between h-12 mb-24">
         <div class="w-44">
@@ -10,11 +11,10 @@
         </div>
       </header>
       <div class="flex gap-8 justify-center">
-        <div class="w-1/4 bg-[#0F0E0F] h-[682px] border border-gray-500 rounded-lg p-6 flex flex-col gap-8 justify-between ">
-          <div class="flex flex-col gap-8 relative">
-            <div class="absolute top-[3%] right-0">
-              <button @click="openModal()" >
-                <svg width="20" height="20" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg" class="hover:stroke-[#C889C6] stroke-[#838383] duration-150 shadow-[#C889C6]">
+        <div class="w-1/4 bg-[#0F0E0F] h-[682px] border border-gray-500 rounded-lg p-6 flex flex-col gap-8 justify-between relative">
+            <div class="absolute top-[4.5%] right-[3%]">
+              <button >
+                <svg fill="none" width="20" height="20" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg" class="hover:stroke-[#C889C6] stroke-[#838383] duration-150 shadow-[#C889C6]">
                 <path d="M4.95825 4.9585H4.24992C3.8742 4.9585 3.51386 5.10775 3.24818 5.37343C2.98251 5.6391 2.83325 5.99944 2.83325 6.37516V12.7502C2.83325 13.1259 2.98251 13.4862 3.24818 13.7519C3.51386 14.0176 3.8742 14.1668 4.24992 14.1668H10.6249C11.0006 14.1668 11.361 14.0176 11.6267 13.7519C11.8923 13.4862 12.0416 13.1259 12.0416 12.7502V12.0418" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M11.3333 3.54174L13.4583 5.66674M14.4394 4.66445C14.7183 4.38548 14.8751 4.00711 14.8751 3.61258C14.8751 3.21805 14.7183 2.83968 14.4394 2.5607C14.1604 2.28173 13.782 2.125 13.3875 2.125C12.993 2.125 12.6146 2.28173 12.3356 2.5607L6.375 8.50008V10.6251H8.5L14.4394 4.66445Z" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -22,17 +22,18 @@
               
 
             </div>
+          <div class="flex flex-col gap-8 relative">
           <div class="text-center flex flex-col">
             <span class="font-semibold text-2xl text-[#f2f2f7]">Подразделения</span>
             <span class="font-light text-[13px] text-[#838383]">Для фильтрации выберите подразделения</span>
           </div>
           <div class="flex flex-col gap-3">
-          <div class="dropdown w-full bg-[#0F0F0F] relative" >
+          <div class="dropdown w-full bg-[#0F0F0F] relative" v-for="object in objects" :key="object.id">
             <div class="dropdown-header px-4 py-3"  @click="toggleDropdown">
               <div class="radio-container">
                 <input type="checkbox" name="dropdown" v-model="isChecked" class="switch" @click.stop/>
               </div>
-              <div class="text-container text-left text-[#f2f2f7]">Заголовок</div>
+              <div class="text-container text-left text-[#f2f2f7]">{{ object.name }}</div>
               <div class="arrow-container">
                 <span class="arrow"></span>
               </div>
@@ -41,12 +42,12 @@
               <div class="max-h-[150px] overflow-x-hidden overflow-y-scroll mr-[10px]">
               <div v-for="value in values" :key="value" class="flex gap-3 px-6 text-[#f2f2f7] items-center cursor-pointer" @click="handleCheckboxClick(value)">
                 <input type="checkbox" :checked="isCheckedValues.includes(value)" class="w-[16px] h-[16px] bg-transparent">
-                <li>{{ value }}</li>
+                <li v-for="tag in object.tags.split(',')">{{ tag }}</li>
               </div>
             </div>
             </ul>
           </div>
-          <button class="w-full px-4 py-3 flex items-center justify-center border-dashed border-[2px] border-[#838383] rounded-[4px] max-h-[48px] duration-150" id="addedPosition">
+          <button class="w-full px-4 py-3 flex items-center justify-center border-dashed border-[2px] border-[#838383] rounded-[4px] max-h-[48px] duration-150" id="addedPosition" @click="isModalOpen = true; $refs.modalAddPosition.openModal()">
             <span class="text-2xl duration-150">+</span>
           </button>
         </div>
@@ -62,27 +63,22 @@
           <div class="bg-[#0F0E0F] border border-gray-500 rounded-lg"></div>
         </div>
 
-        <div id="modal" class="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 opacity-0 pointer-events-none ">
-    <div class="bg-white rounded p-6 w-72 duration-300 w-[424px]">
-      <span class="font-semibold text-xl">Новая запись</span>
-      <div class="mt-4">
-        <label for="name" class="text-sm font-light">Название</label>
-        <input id="name" type="text" class="w-full h-8 mt-1 border border-gray-300 rounded px-2 text-sm text-gray-700" />
-      </div>
-      <div class="mt-4">
-        <label for="values" class="text-sm font-light">Список значений</label>
-        <textarea id="values" class="w-full h-24 mt-1 border border-gray-300 rounded px-2 py-1 text-sm text-gray-700"></textarea>
-      </div>
-    </div>
-    <div class="fixed top-0 left-0 w-full h-full bg-[#0F0E0F] bg-opacity-70 backdrop-blur z-[-1]"></div>
-  </div>
+       
+            
+        
       </div>
     </div>
   </div>
 </template>
 
 <script>
+
+import ModalAddPosition from "@/components/ModalAddPosition.vue";
+
 export default {
+    components: {
+    ModalAddPosition
+  },
   data() {
     return {
       user: '',
@@ -90,7 +86,12 @@ export default {
       shouldShowDropdown: false,
       isChecked: false, // Значение чекбокса в radio-container
       isCheckedValues: [], // Массив значений, для которых чекбоксы выбраны
-      values: ['Значение 1', 'Значение 2', 'Значение 3', 'Значение 4']
+      values: ['Значение 1', 'Значение 2', 'Значение 3', 'Значение 4'],
+      isModalOpen: false, 
+      nameValue: '',
+      addValues: '',
+      tags: [],
+      objects: []
     };
   },
   created() {
@@ -102,18 +103,14 @@ export default {
   },
   methods: {
     openModal() {
-      const modal = document.getElementById('modal');
-  modal.style.opacity = '1';
-  modal.style.pointerEvents = 'auto';
-  modal.children[0].classList.add('translate-y-0');
-    },
-
-    closeModal() {
-      const modal = document.getElementById('modal');
-  modal.style.opacity = '0';
-  modal.style.pointerEvents = 'none';
-  modal.children[0].classList.remove('translate-y-0');
-    }, 
+        this.isModalOpen = true;
+        this.$refs.modalAddPosition.openModal();
+      },
+      resetTags() {
+      this.tags = [];
+      this.isModalOpen = false;
+      
+    },  
     selectValue(value) {
       this.radioValue = event.target.checked;
     },
@@ -175,7 +172,7 @@ export default {
       }
     }, 
     
-  },
+},
 };
 </script>
 
@@ -357,8 +354,8 @@ export default {
       width: 38px;
       border-radius: 11px;
       &:after {
-        left: 2px;
-        top: 1.5px;
+        left: 1px;
+        top: 1px;
         border-radius: 50%;
         width: 15px;
         height: 15px;
@@ -456,5 +453,18 @@ color: #838383;
 
 .translate-y-0 {
   transform: translateY(0) !important;
+}
+
+.modal-conteiner {
+    background-color: rgb(15, 14, 15, 70%) ;
+    border: 1px solid rgba(131, 131, 131, 30%);
+    border-radius: 14px;
+}
+
+#buttonCloseModal:hover {
+    box-shadow: 0px 0px 10px 0px rgba(200, 137, 198, 0.25);
+}
+#buttonCloseModal:hover svg {
+    stroke: #f2f2f7
 }
 </style>

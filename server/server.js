@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const loginRouter = require('./api/login');
 const userRouter = require('./api/user')
+const objectRouter = require('./api/addObject');
 
 app.use(express.json());
 
@@ -13,7 +14,7 @@ app.use((req, res, next) => {
   });
 // Маршрут для аутентификации
 app.use('/api/login', loginRouter);
-
+app.post('/api/addObject', objectRouter);
 app.use('/api/user', userRouter);
 
 
