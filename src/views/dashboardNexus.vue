@@ -31,7 +31,7 @@
           <div class="dropdown w-full bg-[#0F0F0F] relative" v-for="object in objects" :key="object.id">
             <div class="dropdown-header px-4 py-3"  @click="toggleDropdown">
               <div class="radio-container">
-                <input type="checkbox" name="dropdown" v-model="isChecked" class="switch" @click.stop/>
+                <input type="checkbox" name="dropdown" v-model="isCheckedAll" class="switch" @click.stop="toggleAllCheckboxes" />
               </div>
               <div class="text-container text-left text-[#f2f2f7]">{{ object.name }}</div>
               <div class="arrow-container">
@@ -39,13 +39,17 @@
               </div>
             </div>
             <ul class="dropdown-list h-[0px] opacity-0 duration-150 hidden flex flex-col justify-center">
-              <div class="max-h-[150px] overflow-x-hidden overflow-y-scroll mr-[10px]">
-              <div v-for="value in values" :key="value" class="flex gap-3 px-6 text-[#f2f2f7] items-center cursor-pointer" @click="handleCheckboxClick(value)">
-                <input type="checkbox" :checked="isCheckedValues.includes(value)" class="w-[16px] h-[16px] bg-transparent">
-                <li v-for="tag in object.tags.split(',')">{{ tag }}</li>
-              </div>
-            </div>
-            </ul>
+                <div class="max-h-[150px] overflow-x-hidden overflow-y-scroll mr-[10px] flex flex-col gap-3 py-3">
+                    <div v-for="tag in object.tags.split(',')" :key="tag"  class="flex flex-col justify-between gap-3 px-4 text-[#f2f2f7] items-center cursor-pointer w-full">
+                        <div class="flex gap-3 text-[#f2f2f7] items-center cursor-pointer w-full" @click="handleCheckboxClick(value)">
+                          <div class="flex justify-start gap-4 w-full">
+                            <input type="checkbox" :checked="isCheckedValue(tag)" :id="'checkbox-' + tag" class="w-[16px] h-[16px] bg-transparent" @change="handleCheckboxClick(tag)"> 
+                            <span class="text-[14px]">{{ tag }}</span>
+                          </div>
+                        </div>
+                      </div>
+                </div>
+              </ul>
           </div>
           <button class="w-full px-4 py-3 flex items-center justify-center border-dashed border-[2px] border-[#838383] rounded-[4px] max-h-[48px] duration-150" id="addedPosition" @click="isModalOpen = true; $refs.modalAddPosition.openModal()">
             <span class="text-2xl duration-150">+</span>
@@ -74,6 +78,7 @@
 <script>
 
 import ModalAddPosition from "@/components/ModalAddPosition.vue";
+import axios from 'axios';
 
 export default {
     components: {
@@ -91,7 +96,8 @@ export default {
       nameValue: '',
       addValues: '',
       tags: [],
-      objects: []
+      objects: [], 
+      isCheckedAll: false,
     };
   },
   created() {
@@ -101,7 +107,41 @@ export default {
       this.getUserData(user_id);
     }
   },
+  mounted() {
+    this.fetchObjects(); // Вызов метода для получения записей при монтировании компонента
+  },
   methods: {
+    toggleAllCheckboxes() {
+    if (this.isCheckedAll) {
+      // Если isCheckedAll равно true, добавляем все значения в массив isCheckedValues
+      this.isCheckedValues = [...this.object.tags.split(',')];
+    } else {
+      // Если isCheckedAll равно false, очищаем массив isCheckedValues
+      this.isCheckedValues = [];
+    }
+  },
+    isCheckedValue(tag) {
+  return this.isCheckedValues.includes(tag);
+},
+handleCheckboxClick(tag) {
+  const index = this.isCheckedValues.indexOf(tag);
+
+  if (index === -1) {
+    this.isCheckedValues.push(tag);  // Добавление значения в массив, если оно не содержится
+  } else {
+    this.isCheckedValues.splice(index, 1);  // Удаление значения из массива, если оно уже присутствует
+  }
+},
+    fetchObjects() {
+      // Выполнение GET-запроса на сервер для получения записей
+      axios.get('http://localhost:3000/api/objects')
+        .then(response => {
+          this.objects = response.data; // Сохранение полученных записей в свойство objects
+        })
+        .catch(error => {
+          console.error('Ошибка при получении записей:', error);
+        });
+    },
     openModal() {
         this.isModalOpen = true;
         this.$refs.modalAddPosition.openModal();

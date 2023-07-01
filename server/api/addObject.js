@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
   port: 7859, // Обновленный порт
 });
 
-router.post('/addObject', (req, res) => {
+router.post('/', (req, res) => {
   const { name, tags } = req.body;
 
   // Формирование SQL-запроса
@@ -28,8 +28,5 @@ router.post('/addObject', (req, res) => {
     return res.status(200).json({ success: true });
   });
 });
-
-// Роут для обработки запроса на добавление объекта
-
 
 module.exports = router;

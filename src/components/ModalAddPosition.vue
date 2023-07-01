@@ -7,7 +7,7 @@
       </svg>
     </button>
     <span class="font-semibold text-xl text-[#f2f2f7]">Новый объект слежения</span>
-    <form @submit="submitForm" class="flex flex-col gap-3">
+    <form @submit="submitForm" class="flex flex-col gap-3" id="submitForm" @keydown.enter.prevent>
     <div class="text-left flex flex-col gap-1 font-[Montserrat]">
       <label for="nameValue" class="font-[Montserrat] font-light text-[#f2f2f7] text-sm mb-2">Название:</label>
       <input ref="nameValueRef" v-model="nameValue" id="nameValue" type="text" class="w-full h-14 bg-[#0F0E0F] bg-opacity-70 border border-gray-500 border-opacity-50 backdrop-filter backdrop-blur-lg p-3 text-[#838383] rounded-[14px] focus:outline-none focus:border-[#C889C6]" placeholder="Введите название">
@@ -25,7 +25,7 @@
       </span></div>
     </div>
     <div class="flex items-center justify-center">
-      <button type="submit" class="w-full bg-[#C58BC5] font-light text-md rounded-[14px] text-[#f2f2f7] p-3 hover:bg-[#885886] duration-150 shadow-[#C58BC5] w-[80%] cursor-pointer" id="addPosition" @keydown.prevent="checkKey($event)">Добавить запись</button>
+      <button type="submit" class="w-full bg-[#C58BC5] font-light text-md rounded-[14px] text-[#f2f2f7] p-3 hover:bg-[#885886] duration-150 shadow-[#C58BC5] w-[80%] cursor-pointer" id="addPosition">Добавить запись</button>
     </div>
     
     </form>
@@ -35,6 +35,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
@@ -60,22 +62,26 @@ export default {
       event.preventDefault();
     }
   },
-    submitForm() {
-    // Создайте объект с данными, которые нужно отправить на сервер
-    const data = {
-      name: this.nameValue,
-      tags: this.tags
-    };
+  submitForm(event) {
+    event.preventDefault(); // Prevent page reload
 
-    // Выполните POST-запрос на сервер, передавая данные в теле запроса
-    axios.post('/api/addObject', data)
-      .then(response => {
-        console.log('Успешно')
-      })
-      .catch(error => {
-        console.error('Неудача')
-      });
-  },
+  // Создайте объект с данными, которые нужно отправить на сервер
+  const data = {
+    name: this.nameValue,
+    tags: this.tags
+  };
+
+  // Выполните POST-запрос на сервер, передавая данные в теле запроса
+  axios.post('http://localhost:3000/api/addObject', data)
+    .then(response => {
+      console.log('Успешно');
+      // Дополнительные действия после успешной отправки
+    })
+    .catch(error => {
+      console.error('Неудача');
+      // Обработка ошибки
+    });
+},
     removeTag(tag) {
   const index = this.tags.indexOf(tag);
   if (index !== -1) {

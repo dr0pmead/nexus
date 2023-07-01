@@ -2,9 +2,12 @@ const express = require('express');
 const app = express();
 const loginRouter = require('./api/login');
 const userRouter = require('./api/user')
-const objectRouter = require('./api/addObject');
+const bodyParser = require('body-parser');
+const addObjectRouter = require('./api/addObject');
+const objects = require('./api/objects');
 
 app.use(express.json());
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080'); // Замените на вашу фронтенд-страницу, если она на другом домене или порту
@@ -12,11 +15,13 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     next();
   });
+
+
 // Маршрут для аутентификации
 app.use('/api/login', loginRouter);
-app.post('/api/addObject', objectRouter);
 app.use('/api/user', userRouter);
-
+app.use('/api/addObject', addObjectRouter);
+app.use('/api/objects', objects);
 
 // Запуск сервера
 app.listen(3000, () => {
