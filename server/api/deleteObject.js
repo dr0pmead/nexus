@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
   port: 7859,
 });
 
-router.post('/', (req, res) => {
+router.delete('/', (req, res) => {
   const objectId = req.body.objectId;
 
   // Формирование SQL-запроса для удаления объекта с заданным objectId

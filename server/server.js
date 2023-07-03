@@ -6,7 +6,8 @@ const bodyParser = require('body-parser');
 const addObjectRouter = require('./api/addObject');
 const objects = require('./api/objects');
 const object = require('./api/object');
-const delObject = require('./api/deleteObject');
+const delObjectRouter = require('./api/deleteObject');
+const morgan = require('morgan');
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -20,14 +21,18 @@ app.use((req, res, next) => {
 
 
 // Маршрут для аутентификации
+app.use(morgan('dev'));
 app.use('/api/login', loginRouter);
 app.use('/api/user', userRouter);
 app.use('/api/addObject', addObjectRouter);
 app.use('/api/objects', objects);
 app.use('/api/object', object);
-app.use('/api/deleteObject', delObject);
+app.use('/api/deleteObject', delObjectRouter);
 
 // Запуск сервера
 app.listen(3000, () => {
-  console.log('Сервер запущен на порту 3000');
+
+        console.log('   Сервер запущен на порту     3000.     ');
+        console.log('   http://localhost:3000/                ');
+
 });

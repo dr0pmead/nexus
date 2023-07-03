@@ -114,36 +114,32 @@ export default {
         console.log('newTags:', this.newTags);
       }
     },
-      deleteObject() {
-        
-    // Выполняется при нажатии на кнопку "Удалить объект"
-    if (confirm('Вы уверены, что хотите удалить объект?')) {
-      this.$refs.loading.classList.remove('hidden')
-      const objectId = this.selectedObjectId;
+    deleteObject() {
+  // Выполняется при нажатии на кнопку "Удалить объект"
+  if (confirm('Вы уверены, что хотите удалить объект?')) {
+    this.$refs.loading.classList.remove('hidden');
+    const objectId = this.selectedObjectId;
 
-      // Выполнение запроса на удаление объекта по ID
-      axios.post(`http://localhost:3000/api/deleteObject`, { objectId })
-        .then((response) => {
-          
-          this.$refs.spinner.classList.add('successfully')
+    // Выполнение запроса на удаление объекта по ID
+    axios.delete(`http://localhost:3000/api/deleteObject`, { data: { objectId } })
+      .then((response) => {
+        if (response.status === 200) {
+          // Обработка успешного удаления объекта
+          this.$refs.spinner.classList.add('successfully');
           setTimeout(() => {
-          this.closeModal()
-          loading.classList.add('.hidden')
-          }, 300)
-        })
-        .catch((error) => {
-          setTimeout(() => {
-          this.$refs.spinner.classList.add('error')
-          }, 500);
-          setTimeout(() => {
-          this.closeModal()
-          this.$refs.loading.classList.add('hidden')
-          }, 1000)
-          console.error('Ошибка при удалении объекта:', error);
-          // Дополнительные действия при ошибке
-        });
-    }
-  },
+            this.closeModal();
+            this.$refs.loading.classList.add('hidden');
+          }, 300);
+        } else {
+          // Обработка других статусов ответа, если требуется
+        }
+      })
+      .catch((error) => {
+        // Обработка ошибки удаления объекта
+      });
+  }
+}
+,
     openModal(objectId) {
 
       axios
