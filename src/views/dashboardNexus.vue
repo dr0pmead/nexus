@@ -1,6 +1,7 @@
 <template>
     <div class="bg-[#0F0E0F] min-h-screen font-[Montserrat]">
       <ModalAddPosition ref="modalAddPosition" :isModalOpen="isModalOpen" @closeModal="resetTags"/>
+      <EditModalPosition ref="EditModalPosition" :isModalOpen="isEditModalOpen" @closeModal="closeEditModal" :selectedObjectId="selectedObject.id"/>
     <div class="flex flex-col px-28 py-14">
       <header class="flex justify-between h-12 mb-24">
         <div class="w-44">
@@ -28,29 +29,39 @@
             <span class="font-light text-[13px] text-[#838383]">Для фильтрации выберите подразделения</span>
           </div>
           <div class="flex flex-col gap-3">
-          <div class="dropdown w-full bg-[#0F0F0F] relative" v-for="object in objects" :key="object.id">
-            <div class="dropdown-header px-4 py-3"  @click="toggleDropdown">
-              <div class="radio-container">
-                <input type="checkbox" name="dropdown" v-model="isCheckedAll" class="switch" @click.stop="toggleAllCheckboxes" />
-              </div>
-              <div class="text-container text-left text-[#f2f2f7]">{{ object.name }}</div>
-              <div class="arrow-container">
-                <span class="arrow"></span>
-              </div>
-            </div>
-            <ul class="dropdown-list h-[0px] opacity-0 duration-150 hidden flex flex-col justify-center">
-                <div class="max-h-[150px] overflow-x-hidden overflow-y-scroll mr-[10px] flex flex-col gap-3 py-3">
-                    <div v-for="tag in object.tags.split(',')" :key="tag"  class="flex flex-col justify-between gap-3 px-4 text-[#f2f2f7] items-center cursor-pointer w-full">
-                        <div class="flex gap-3 text-[#f2f2f7] items-center cursor-pointer w-full" @click="handleCheckboxClick(value)">
-                          <div class="flex justify-start gap-4 w-full">
-                            <input type="checkbox" :checked="isCheckedValue(tag)" :id="'checkbox-' + tag" class="w-[16px] h-[16px] bg-transparent" @change="handleCheckboxClick(tag)"> 
-                            <span class="text-[14px]">{{ tag }}</span>
-                          </div>
+            <div class="dropdown w-full bg-[#0F0F0F] relative" v-for="object in objects" :key="object.id" :id="object.id">
+                <div class=" absolute top-[-10px] right-[-10px] flex flex-col gap-3">
+                    <button class="bg-[#838383] duration-150 bg-opacity-[50%] flex rounded-full w-[25px] h-[25px] items-center justify-center hover:bg-[#C58BC5]" id="buttonEditObject" @click="openEditModal(object.selectedObjectId)">
+                        <svg class="stroke-[#838383] duration-150 mx-auto" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.65 3.4625L6.525 1.3625L7.225 0.6625C7.41667 0.470833 7.65217 0.375 7.9315 0.375C8.21083 0.375 8.44617 0.470833 8.6375 0.6625L9.3375 1.3625C9.52917 1.55417 9.62917 1.7855 9.6375 2.0565C9.64583 2.3275 9.55417 2.55867 9.3625 2.75L8.65 3.4625ZM7.925 4.2L2.625 9.5H0.5V7.375L5.8 2.075L7.925 4.2Z"/>
+                            </svg>
+                            
+                    </button>
+                </div>
+                
+                <div class="dropdown-header px-4 py-3" @click="toggleDropdown">
+                  <div class="radio-container">
+                    <input type="checkbox" :checked="isCheckedAll && isAllCheckboxesSelected" class="switch" @click.stop="toggleAllCheckboxes" />
+                  </div>
+                  <div class="text-container text-left text-[#f2f2f7]">{{ object.name }}</div>
+                  <div class="arrow-container">
+                    <span class="arrow"></span>
+                  </div>
+                </div>
+                <ul class="dropdown-list h-[0px] opacity-0 duration-150 hidden flex flex-col justify-center">
+                  <div class="max-h-[150px] overflow-x-hidden overflow-y-scroll mr-[10px] flex flex-col gap-3 py-3">
+                    <div v-for="tag in object.tags.split(',')" :key="tag" class="flex flex-col justify-between gap-3 px-4 text-[#f2f2f7] items-center cursor-pointer w-full">
+                      <div class="flex gap-3 text-[#f2f2f7] items-center cursor-pointer w-full">
+                        <div class="flex justify-start gap-4 w-full">
+                          <input type="checkbox" :checked="isCheckedValue(tag)" :data-tag="tag" :id="'checkbox-' + tag" class="w-[16px] h-[16px] bg-transparent tag-checkbox" @change="handleCheckboxClick(tag); checkAllCheckboxesSelected()">
+                          <span class="text-[14px]">{{ tag }}</span>
                         </div>
                       </div>
-                </div>
-              </ul>
-          </div>
+                    </div>
+                  </div>
+                </ul>
+              </div>
+              
           <button class="w-full px-4 py-3 flex items-center justify-center border-dashed border-[2px] border-[#838383] rounded-[4px] max-h-[48px] duration-150" id="addedPosition" @click="isModalOpen = true; $refs.modalAddPosition.openModal()">
             <span class="text-2xl duration-150">+</span>
           </button>
@@ -78,26 +89,26 @@
 <script>
 
 import ModalAddPosition from "@/components/ModalAddPosition.vue";
+import EditModalPosition from "@/components/EditModalPosition.vue";
 import axios from 'axios';
 
 export default {
     components: {
-    ModalAddPosition
+    ModalAddPosition,
+    EditModalPosition
   },
   data() {
     return {
       user: '',
       isOpen: false,
-      shouldShowDropdown: false,
-      isChecked: false, // Значение чекбокса в radio-container
-      isCheckedValues: [], // Массив значений, для которых чекбоксы выбраны
-      values: ['Значение 1', 'Значение 2', 'Значение 3', 'Значение 4'],
       isModalOpen: false, 
-      nameValue: '',
-      addValues: '',
+      isEditModalOpen: false,
       tags: [],
       objects: [], 
       isCheckedAll: false,
+      isAllCheckboxesSelected: false,
+      filter: [], 
+      selectedObject: null
     };
   },
   created() {
@@ -107,49 +118,100 @@ export default {
       this.getUserData(user_id);
     }
   },
-  mounted() {
-    this.fetchObjects(); // Вызов метода для получения записей при монтировании компонента
-  },
-  methods: {
-    toggleAllCheckboxes() {
-    if (this.isCheckedAll) {
-      // Если isCheckedAll равно true, добавляем все значения в массив isCheckedValues
-      this.isCheckedValues = [...this.object.tags.split(',')];
-    } else {
-      // Если isCheckedAll равно false, очищаем массив isCheckedValues
-      this.isCheckedValues = [];
+  watch: {
+    objects: {
+      deep: true,
+      handler(newObjects) {
+        console.log(newObjects); // Вывод измененных данных массива objects в консоль
+      }
     }
   },
-    isCheckedValue(tag) {
-  return this.isCheckedValues.includes(tag);
-},
-handleCheckboxClick(tag) {
-  const index = this.isCheckedValues.indexOf(tag);
+  mounted() {
+    this.fetchObjects(); // Вызов метода для получения записей при монтировании компонента
+    console.log(this.objects);
+  },
+  methods: {
+    checkAllCheckboxesSelected() {
+  const dropdownList = document.querySelector('.dropdown-list');
+  const tags = dropdownList.querySelectorAll('.tag-checkbox');
+  const allSelected = Array.from(tags).every(tag => tag.checked);
 
-  if (index === -1) {
-    this.isCheckedValues.push(tag);  // Добавление значения в массив, если оно не содержится
-  } else {
-    this.isCheckedValues.splice(index, 1);  // Удаление значения из массива, если оно уже присутствует
-  }
+  this.isAllCheckboxesSelected = allSelected;
 },
-    fetchObjects() {
-      // Выполнение GET-запроса на сервер для получения записей
-      axios.get('http://localhost:3000/api/objects')
-        .then(response => {
-          this.objects = response.data; // Сохранение полученных записей в свойство objects
-        })
-        .catch(error => {
-          console.error('Ошибка при получении записей:', error);
-        });
+    isCheckedValue(tag) {
+        return this.filter.includes(tag);
+        },
+        toggleAllCheckboxes() {
+    const dropdownList = document.querySelector('.dropdown-list');
+    const tags = dropdownList.querySelectorAll('.tag-checkbox');
+    const selectedTags = Array.from(tags).map(tag => tag.getAttribute('data-tag'));
+    const checkedCount = selectedTags.filter(tag => this.filter.includes(tag)).length;
+
+    if (checkedCount === selectedTags.length) {
+        // Если все значения уже выбраны, снимаем выделение со всех значений
+        this.filter = [];
+        this.isCheckedAll = false;
+    } else {
+        // Если не все значения выбраны, выделяем все значения
+        this.filter = selectedTags;
+        this.isCheckedAll = true;
+    }
+
+    console.log(this.filter); // Вывод массива filter в консоль после каждого изменения
+    },
+    handleCheckboxClick(tag) {
+      const index = this.filter.indexOf(tag);
+
+      if (index === -1) {
+        this.filter.push(tag); // Добавление значения в массив, если оно не содержится
+      } else {
+        this.filter.splice(index, 1); // Удаление значения из массива, если оно уже присутствует
+      }
+
+      console.log(this.filter); // Вывод массива filter в консоль после каждого изменения
+
+      // Проверка, если все чекбоксы выделены, установить isCheckedAll в true, иначе в false
+      const dropdownList = document.querySelector('.dropdown-list');
+      const tags = dropdownList.querySelectorAll('.tag-checkbox');
+      const selectedTags = Array.from(tags).every(tag => tag.checked);
+
+      this.isCheckedAll = selectedTags;
+    },
+    selectObject(id) {
+    this.selectedObjectId = id;
+  },
+  fetchObjects() {
+  axios
+    .get('http://localhost:3000/api/objects')
+    .then(response => {
+      this.objects = response.data;
+      this.objects.forEach(object => {
+        object.selectedObjectId = object.id;
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching objects:', error);
+    });
+},
+    openEditModal(id) {
+        this.selectedObject = this.objects.find(object => object.id === selectedObjectId);
+
+        if (this.selectedObject) {
+            this.$refs.EditModalPosition.openModal();
+        } else {
+            console.error('Object with selectedObjectId not found');
+        }
+    },
+    closeEditModal() {
+      this.selectedObjectId = null;
     },
     openModal() {
         this.isModalOpen = true;
         this.$refs.modalAddPosition.openModal();
       },
-      resetTags() {
+    resetTags() {
       this.tags = [];
       this.isModalOpen = false;
-      
     },  
     selectValue(value) {
       this.radioValue = event.target.checked;
@@ -160,7 +222,6 @@ handleCheckboxClick(tag) {
     toggleDropdown() {
       // this.isChecked = !this.isChecked;
       const dropdownList = document.querySelector('.dropdown-list');
-      
       if (dropdownList.classList.contains('h-[0px]')) {
         dropdownList.classList.remove('hidden');
         setTimeout(() => {
@@ -218,10 +279,15 @@ handleCheckboxClick(tag) {
 
 <style scoped>
 .dropdown {
-  overflow: hidden;
+ 
   background-color: rgb(15, 14, 15, 70%) ;
   border: 1px solid rgba(131, 131, 131, 30%);
   border-radius: 4px;
+  position: relative;
+}
+
+.delObject:hover .svg{
+    stroke: #f2f2f7;
 }
 
 .dropdown-header {
@@ -431,6 +497,15 @@ handleCheckboxClick(tag) {
   }
 }
 
+#buttonEditObject:hover {
+    box-shadow: 0px 0px 10px 0px rgba(200, 137, 198, 0.25);
+  }
+  
+  #buttonEditObject:hover svg {
+    stroke: #f2f2f7;
+  }
+
+  
 #addedPosition {
   opacity: 0.5;
 }
