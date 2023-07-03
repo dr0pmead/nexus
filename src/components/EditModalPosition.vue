@@ -1,5 +1,5 @@
 <template>
-  <div  class="fixed top-0 left-0 w-full h-full flex items-center justify-center z-[9999] opacity-0 pointer-events-none duration-150 " ref="editModalContent">
+  <div  class="fixed top-0 left-0 w-full h-full flex items-center justify-center z-[9999] opacity-0 pointer-events-none duration-150 " ref="editModalContent" :id="selectedObjectId">
     <div class="bg-white rounded p-6 duration-300 w-[424px] modal-conteiner flex flex-col gap-6 relative translate-y-[50px] opacity-0" ref="editModalElement">
       <button @click="closeModal" class="absolute top-[-2%] right-[-3%] w-[30px] h-[30px] rounded-[50%] bg-[#838383] flex items-center justify-center hover:bg-[#C58BC5] duration-150" id="buttonCloseModal">
         <svg class="stroke-[#1c1c1e] duration-150" width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
@@ -9,8 +9,8 @@
       <span class="font-semibold text-xl text-[#f2f2f7]">Редактирование объекта</span>
       <form @submit="submitForm" class="flex flex-col gap-3" id="submitForm" @keydown.enter.prevent>
         <div class="text-left flex flex-col gap-1 font-[Montserrat]">
-          <label for="nameValue" class="font-[Montserrat] font-light text-[#f2f2f7] text-sm mb-2">Название:</label>
-          <input  ref="nameValueRef" id="nameValue" type="text" class="w-full h-14 bg-[#838383] bg-opacity-10 border border-gray-500 border-opacity-50 backdrop-filter backdrop-blur-lg p-3 text-[#838383] rounded-[14px] focus:outline-none focus:border-[#C889C6] items-center" :placeholder="name" :disabled="name"/>
+          <label for="nameValue" class="font-[Montserrat] font-light text-[#f2f2f7] text-sm mb-2">{{ objectName }}:</label>
+          <input  ref="nameValueRef" id="nameValue" type="text" class="w-full h-14 bg-[#838383] bg-opacity-10 border border-gray-500 border-opacity-50 backdrop-filter backdrop-blur-lg p-3 text-[#838383] rounded-[14px] focus:outline-none focus:border-[#C889C6] items-center" :placeholder="objectName" :disabled="objectName"/>
         </div>
         <div class="text-left flex flex-col gap-1 font-[Montserrat]">
           <label for="addValues" class="font-[Montserrat] font-light text-[#f2f2f7] text-sm mb-2">Список значений:</label>
@@ -44,10 +44,10 @@ export default {
   
   props: {
     selectedObjectId: {
-      type: String,
-      required: true
-    }
-  },
+    type: String, // или другой подходящий тип данных
+    requared: true,
+  }
+},
   data() {
     return {
       nameValue: '',
@@ -57,22 +57,22 @@ export default {
       currentTag: "",
       isOpen: false,
       objectName: '',
-      objectTags: []
+      objectTags: [],
     };
   },
   methods: {
     fetchObjectData() {
-      axios
-        .get(`http://localhost:3000/api/objects`)
-        .then(response => {
-          const objectData = response.data;
-          this.objectName = objectData.name;
-          this.objectTags = objectData.tags;
-        })
-        .catch(error => {
-          console.error('Error retrieving object data:', error);
-        });
-    },
+  axios
+    .get(`http://localhost:3000/api/object`)
+    .then(response => {
+      const objectData = response.data;
+      this.objectName = objectData.name;
+      this.objectTags = objectData.tags;
+    })
+    .catch(error => {
+      console.error('Error retrieving object data:', error);
+    });
+},
     submitForm(event) {
       event.preventDefault();
       const data = {
@@ -114,7 +114,9 @@ export default {
           console.error("Ошибка при удалении записи:", error);
         });
     },
-    openModal() {
+    openModal(objectId) {
+
+      this.$emit('update:selectedObjectId', objectId);
       this.isOpen = true;
       this.$nextTick(() => {
         this.$refs.editModalContent.classList.remove("opacity-0");
@@ -127,7 +129,9 @@ export default {
           "opacity-0"
         );
         this.$refs.editModalElement.classList.add("translate-y-0", "opacity-1");
+        
       });
+    
     },
     closeModal() {
       this.$refs.editModalContent.classList.add(

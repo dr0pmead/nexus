@@ -1,7 +1,7 @@
 <template>
     <div class="bg-[#0F0E0F] min-h-screen font-[Montserrat]">
       <ModalAddPosition ref="modalAddPosition" :isModalOpen="isModalOpen" @closeModal="resetTags"/>
-      <EditModalPosition ref="EditModalPosition" :isModalOpen="isEditModalOpen" @closeModal="closeEditModal" :selectedObjectId="selectedObject.id"/>
+      <EditModalPosition ref="EditModalPosition" :isModalOpen="isEditModalOpen" @closeModal="closeEditModal"  :selected-object-id="selectedObjectId"/>
     <div class="flex flex-col px-28 py-14">
       <header class="flex justify-between h-12 mb-24">
         <div class="w-44">
@@ -31,7 +31,7 @@
           <div class="flex flex-col gap-3">
             <div class="dropdown w-full bg-[#0F0F0F] relative" v-for="object in objects" :key="object.id" :id="object.id">
                 <div class=" absolute top-[-10px] right-[-10px] flex flex-col gap-3">
-                    <button class="bg-[#838383] duration-150 bg-opacity-[50%] flex rounded-full w-[25px] h-[25px] items-center justify-center hover:bg-[#C58BC5]" id="buttonEditObject" @click="openEditModal(object.selectedObjectId)">
+                    <button class="bg-[#838383] duration-150 bg-opacity-[50%] flex rounded-full w-[25px] h-[25px] items-center justify-center hover:bg-[#C58BC5]" id="buttonEditObject" @click="isEditModalOpen = true; $refs.EditModalPosition.openModal(object.id)">
                         <svg class="stroke-[#838383] duration-150 mx-auto" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8.65 3.4625L6.525 1.3625L7.225 0.6625C7.41667 0.470833 7.65217 0.375 7.9315 0.375C8.21083 0.375 8.44617 0.470833 8.6375 0.6625L9.3375 1.3625C9.52917 1.55417 9.62917 1.7855 9.6375 2.0565C9.64583 2.3275 9.55417 2.55867 9.3625 2.75L8.65 3.4625ZM7.925 4.2L2.625 9.5H0.5V7.375L5.8 2.075L7.925 4.2Z"/>
                             </svg>
@@ -108,7 +108,8 @@ export default {
       isCheckedAll: false,
       isAllCheckboxesSelected: false,
       filter: [], 
-      selectedObject: null
+      selectedObject: null,
+      selectedObjectId: '',
     };
   },
   created() {
@@ -193,14 +194,9 @@ export default {
       console.error('Error fetching objects:', error);
     });
 },
-    openEditModal(id) {
-        this.selectedObject = this.objects.find(object => object.id === selectedObjectId);
-
-        if (this.selectedObject) {
-            this.$refs.EditModalPosition.openModal();
-        } else {
-            console.error('Object with selectedObjectId not found');
-        }
+    openEditModal(objectId) {
+        this.isEditModalOpen = true;
+        this.$refs.EditModalPosition.openModal(objectId);
     },
     closeEditModal() {
       this.selectedObjectId = null;
