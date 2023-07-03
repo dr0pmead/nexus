@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const addObjectRouter = require('./api/addObject');
 const objects = require('./api/objects');
 const object = require('./api/object');
+const delObject = require('./api/deleteObject');
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -24,6 +25,7 @@ app.use('/api/user', userRouter);
 app.use('/api/addObject', addObjectRouter);
 app.use('/api/objects', objects);
 app.use('/api/object', object);
+app.use('/api/deleteObject', delObject);
 
 // Запуск сервера
 app.listen(3000, () => {
